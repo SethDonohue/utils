@@ -1,15 +1,39 @@
 const fs = require('fs');
+//const testPrompter = require('./tester-prompt.js');
 const spawn = require('child_process').spawn;
+const prompter = require('./prompter.js');
 
-// Run this file (typically a test file) from the first command line argument
-// file path when any of the remaining command line argument file paths are changed.
-let fileToRun = process.argv[2]; 
+let fileToRun = '';
+let filesToWatch = [];
+
+async function startPrompt() {
+	//const results = await testPrompter.promptForRun();
+	const results = await prompter();
+	//console.log('File to Run: ', testPrompter.fileToRun, '\nFiles to Watch: ', testPrompter.filesToWatch);
+	//console.log('File to Run: ', results.fileToRun, '\nFiles to Watch: ', results.filesToWatch);
+	return results;
+};
+
+if(!process.argv[2]){
+	return startPrompt()
+		.then(results => {
+			fileToRun = results.fileToRun;
+			filesToWatch = results.filesToWatch;
+			console.log('Runner File: ', fileToRun);
+			console.log('Watched Files: ', filesToWatch);
+			return;
+		})
+		.then(console.log('HIT END'));
+} else {
+ fileToRun = process.argv[2]; 
+}
+
 console.log('Test File: ' , fileToRun);
 
 const watcher = (filePath) => {
 	const file = fs.readFileSync(filePath);
 
-	fs.watch(filePath, (event, filename) => {
+	fs.watchFile(filePath, {interval: 250 }, (event, filename) => {
 		if(filename){
 			console.log('========== ' + event + ' to ' + filename + ' ===========');
 			spawn(`node`, [fileToRun], { stdio: 'inherit' });
