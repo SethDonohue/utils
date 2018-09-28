@@ -1,5 +1,4 @@
 const fs = require('fs');
-//const testPrompter = require('./tester-prompt.js');
 const spawn = require('child_process').spawn;
 const prompter = require('./prompter.js');
 
@@ -7,28 +6,13 @@ let fileToRun = '';
 let filesToWatch = [];
 
 async function startPrompt() {
-	//const results = await testPrompter.promptForRun();
 	const results = await prompter();
-	//console.log('File to Run: ', testPrompter.fileToRun, '\nFiles to Watch: ', testPrompter.filesToWatch);
-	//console.log('File to Run: ', results.fileToRun, '\nFiles to Watch: ', results.filesToWatch);
 	return results;
 };
 
-if(!process.argv[2]){
-	return startPrompt()
-		.then(results => {
-			fileToRun = results.fileToRun;
-			filesToWatch = results.filesToWatch;
-			console.log('Runner File: ', fileToRun);
-			console.log('Watched Files: ', filesToWatch);
-			return;
-		})
-		.then(console.log('HIT END'));
-} else {
- fileToRun = process.argv[2]; 
-}
-
-console.log('Test File: ' , fileToRun);
+function startPrompt2() {
+	return new Promise( resolve => resolve(prompter()));
+};
 
 const watcher = (filePath) => {
 	const file = fs.readFileSync(filePath);
@@ -43,8 +27,27 @@ const watcher = (filePath) => {
 	});
 }
 
+if(!process.argv[2]){
+	//startPrompt()
+	return prompter()
+		.then(results => {
+			fileToRun = results.fileToRun;
+			filesToWatch = results.filesToWatch;
+			console.log('Runner File: ', fileToRun);
+			console.log('Watched Files: ', filesToWatch);
+			process.stdin.pause();
+			//results;
+		})
+	//	.then(console.log('HIT END'));
+} else {
+	fileToRun = process.argv[2];
+	filesToWatch = process.argv.slice(3, process.argv.length);
+}
+
+console.log('Test File: ' , fileToRun);
+
 // If there are man files to watch loop over and create a new watcher for each one.
-for(let i = 2; i <= process.argv.length - 1; i++){
-	console.log('New watcher for: ', process.argv[i]);
-	watcher(process.argv[i]);
+for(let i = 2; i <= filesToWatch - 1; i++){
+	console.log('New watcher for: ', filesToWatch[i]);
+	watcher(filesToWatch[i]);
 }

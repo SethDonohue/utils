@@ -20,8 +20,9 @@ const promptWatchers = (question) => {
 		stdin.on('data', data => {
 			data = data.toString().trim();
 			if(data == 'q') {
-				console.log('Beginning watch process...');
 				resolve(results);
+				console.log('End of input.');
+				//process.stdin.pause();
 			} else {
 				results.push(data);
 				console.log('File to WATCH: ', data);
@@ -41,11 +42,9 @@ const run = () => {
 				console.log('File to RUN: ', runner);
 				pathResults.fileToRun = runner;
 			})
-			.then(() => promptWatchers('Enter path to Watched file: '))
+			.then(() => promptWatchers('Enter path to Watched file or "q" to start watch: '))
 			.then(results => {
 				pathResults.filesToWatch = results;
-				process.stdin.destroy();
-				//console.log('Resolved');
 				resolve(pathResults);
 			})
 			.catch(error => console.log(error));
